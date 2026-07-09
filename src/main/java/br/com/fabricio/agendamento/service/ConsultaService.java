@@ -59,10 +59,11 @@ public class ConsultaService {
 
 	public void excluir(Long id) {
 
-		if (!repository.existsById(id)) {
-			throw new RecursoNaoEncontradoException("Consulta não encontrada.");
-		}
-		repository.deleteById(id);
+	    if (!repository.existsById(id)) {
+	        throw new RecursoNaoEncontradoException("Consulta não encontrada.");
+	    }
+
+	    repository.deleteById(id);
 	}
 	
 

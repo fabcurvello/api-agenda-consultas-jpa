@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,36 +14,46 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RegraNegocioException.class)
-    public ResponseEntity<Map<String, Object>> tratarRegraNegocio(
-            RegraNegocioException ex) {
+	@ExceptionHandler(RegraNegocioException.class)
+	public ResponseEntity<ApiError> tratarRegraNegocio(RegraNegocioException ex) {
 
-        Map<String, Object> erro = new LinkedHashMap<>();
+		ApiError erro = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), "Regra de Negócio",
+				ex.getMessage());
 
-        erro.put("timestamp", LocalDateTime.now());
-        erro.put("status", HttpStatus.BAD_REQUEST.value());
-        erro.put("erro", "Regra de Negócio");
-        erro.put("mensagem", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+	}
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(erro);
-    }
+	@ExceptionHandler(RecursoNaoEncontradoException.class)
+	public ResponseEntity<ApiError> tratarRecursoNaoEncontrado(RecursoNaoEncontradoException ex) {
 
-    @ExceptionHandler(RecursoNaoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> tratarNaoEncontrado(
-            RecursoNaoEncontradoException ex) {
+		ApiError erro = new ApiError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), "Recurso não encontrado",
+				ex.getMessage());
 
-        Map<String, Object> erro = new LinkedHashMap<>();
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+	}
+	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ApiError> tratarValidacao(MethodArgumentNotValidException ex) {
 
-        erro.put("timestamp", LocalDateTime.now());
-        erro.put("status", HttpStatus.NOT_FOUND.value());
-        erro.put("erro", "Recurso não encontrado");
-        erro.put("mensagem", ex.getMessage());
+	    Map<String, String> campos = new LinkedHashMap<>();
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(erro);
-    }
+	    ex.getBindingResult()
+	      .getFieldErrors()
+	      .forEach(erro -> campos.put(
+	              erro.getField(),
+	              erro.getDefaultMessage()));
+
+	    ApiError apiError = new ApiError(
+	            LocalDateTime.now(),
+	            HttpStatus.BAD_REQUEST.value(),
+	            "Erro de Validação",
+	            "Os dados enviados são inválidos.");
+
+	    apiError.setCampos(campos);
+
+	    return ResponseEntity
+	            .status(HttpStatus.BAD_REQUEST)
+	            .body(apiError);
+	}
 
 }

@@ -12,19 +12,19 @@ import jakarta.validation.constraints.NotNull;
  */
 public class ConsultaRequest {
 	
-	@NotBlank
+	@NotBlank(message = "O paciente é obrigatório.")
 	private String paciente;
 
-	@NotBlank
+	@NotBlank(message = "A especialidade é obrigatória.")
 	private String especialidade;
 
-	@NotBlank
+	@NotBlank(message = "O médico é obrigatório.")
 	private String medico;
 
-	@NotNull
+	@NotNull(message = "A data da consulta é obrigatória.")
 	private LocalDate dataConsulta;
 
-	@NotNull
+	@NotNull(message = "O horário da consulta é obrigatório.")
 	private LocalTime horaConsulta;
 
 	public ConsultaRequest() {
